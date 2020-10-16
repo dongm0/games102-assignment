@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
                 }
                 src.size = src.xs.size();
                 InterPolation_1(src, arr1);
-                InterPolation_2(src, arr2, 0.1);
+                InterPolation_2(src, arr2, mu);
                 draw = true;
             }
             ImGui::End();
