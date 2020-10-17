@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
     bool mainopen = true;
     bool draw = false;
     double mu = 1;
+    int order = 5;
+    double lam = 1;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -98,6 +100,8 @@ int main(int argc, char **argv) {
                 if (draw == true && arr1.size>0) {
                     ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
                     ImPlot::PlotLine("InterPolation_Gaussian", &arr2.xs[0], &arr2.ys[0], arr2.size, 0, sizeof(double));
+                    ImPlot::PlotLine("Least_Square", &arr3.xs[0], &arr3.ys[0], arr3.size, 0, sizeof(double));
+                    ImPlot::PlotLine("Ridge_Regression", &arr4.xs[0], &arr4.ys[0], arr4.size, 0, sizeof(double));
                 }
                 
                 ImPlot::EndPlot();
@@ -111,6 +115,8 @@ int main(int argc, char **argv) {
                 draw = false;
             }
             ImGui::InputDouble("Input mu", &mu);
+            ImGui::InputInt("Input Least-Square Poly order", &order);
+            ImGui::InputDouble("Input lambda", &lam);
             
             if (cal == true && data.size()>0) {
                 std::sort(data.begin(), data.end(), [](ImPlotPoint &p1, ImPlotPoint &p2){ return p1.x < p2.x; });
@@ -122,6 +128,8 @@ int main(int argc, char **argv) {
                 src.size = src.xs.size();
                 InterPolation_1(src, arr1);
                 InterPolation_2(src, arr2, mu);
+                LeastSquare(src, arr3, order);
+                Ridge_Regression(src, arr4, order, lam);
                 draw = true;
             }
             ImGui::End();
