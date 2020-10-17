@@ -81,10 +81,10 @@ int main(int argc, char **argv) {
             }
             */
             
-            ImGui::SetNextWindowSize(ImVec2(1366,768), ImGuiCond_Appearing);
+            ImGui::SetNextWindowSize(ImVec2(900,900), ImGuiCond_Appearing);
             ImGui::Begin("main", &mainopen);
             bool cal = false;
-            if (ImPlot::BeginPlot("Fig", "x", "y", ImVec2(-3, 0))) {
+            if (ImPlot::BeginPlot("Fig", "x", "y", ImVec2(-1, -1))) {
                 if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
                     ImPlotPoint pt = ImPlot::GetPlotMousePos();
                     data.push_back(pt);
@@ -98,8 +98,8 @@ int main(int argc, char **argv) {
                 }
                 
                 if (draw == true && arr1.size>0) {
-                    ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
-                    ImPlot::PlotLine("InterPolation_Gaussian", &arr2.xs[0], &arr2.ys[0], arr2.size, 0, sizeof(double));
+                    //ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
+                    //ImPlot::PlotLine("InterPolation_Gaussian", &arr2.xs[0], &arr2.ys[0], arr2.size, 0, sizeof(double));
                     ImPlot::PlotLine("Least_Square", &arr3.xs[0], &arr3.ys[0], arr3.size, 0, sizeof(double));
                     ImPlot::PlotLine("Ridge_Regression", &arr4.xs[0], &arr4.ys[0], arr4.size, 0, sizeof(double));
                 }
@@ -114,8 +114,8 @@ int main(int argc, char **argv) {
                 data.clear();
                 draw = false;
             }
-            ImGui::InputDouble("Input mu", &mu);
-            ImGui::InputInt("Input Least-Square Poly order", &order);
+            ImGui::InputDouble("Input sigma", &mu);
+            ImGui::InputInt("Input order", &order);
             ImGui::InputDouble("Input lambda", &lam);
             
             if (cal == true && data.size()>0) {
