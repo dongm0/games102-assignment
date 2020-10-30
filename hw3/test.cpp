@@ -97,11 +97,11 @@ int main(int argc, char **argv) {
                     ImPlot::PlotScatter("Raw Data", &xx, &yy, 0);
                 }
                 
-                if (draw == true && arr1.size>0) {
-                    //ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
+                if (draw == true) {
+                    ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
                     //ImPlot::PlotLine("InterPolation_Gaussian", &arr2.xs[0], &arr2.ys[0], arr2.size, 0, sizeof(double));
-                    ImPlot::PlotLine("Least_Square", &arr3.xs[0], &arr3.ys[0], arr3.size, 0, sizeof(double));
-                    ImPlot::PlotLine("Ridge_Regression", &arr4.xs[0], &arr4.ys[0], arr4.size, 0, sizeof(double));
+                    //ImPlot::PlotLine("Least_Square", &arr3.xs[0], &arr3.ys[0], arr3.size, 0, sizeof(double));
+                    //ImPlot::PlotLine("Ridge_Regression", &arr4.xs[0], &arr4.ys[0], arr4.size, 0, sizeof(double));
                 }
                 
                 ImPlot::EndPlot();
@@ -126,11 +126,18 @@ int main(int argc, char **argv) {
                     src.ys.at(i) = data[i].y;
                 }
                 src.size = src.xs.size();
-                InterPolation_1(src, arr1);
-                InterPolation_2(src, arr2, mu);
-                LeastSquare(src, arr3, order);
-                Ridge_Regression(src, arr4, order, lam);
+
+                auto para1 = Parametrization_chordal(src);
+                NodeArr src_x(para1, src.xs);
+                NodeArr src_y(para1, src.ys);
+                //InterPolation_1(src, arr1);
+                //InterPolation_2(src, arr2, mu);
+                InterPolation_2(src_x, arr1, mu);
+                InterPolation_2(src_y, arr2, mu);
+                arr1.xs = arr1.ys, arr1.ys = arr2.ys;
+                //Ridge_Regression(src, arr4, order, lam);
                 draw = true;
+                cal = false;
             }
             ImGui::End();
         

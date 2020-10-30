@@ -10,6 +10,36 @@ struct NodeArr {
     std::vector<double> ys;
 };
 
+void Normalize(std::vector<double> &arr) {
+    double len = arr.back();
+    for (auto &x : arr)
+        x /= len;
+}
+
+
+std::vector<double> Parametrization_uniform(const NodeArr &src) {
+    using namespace std;
+    assert(src.size > 1);
+    vector<double> res(src.size, 0);
+    for (int i=0; i<res.size(); ++i) {
+        res[i] = i;
+    }
+    Normalize(res);
+    return res;
+}
+
+std::vector<double> Parametrization_chordal(const NodeArr &src) {
+    using namespace std;
+    assert(src.size > 1);
+    vector<double> res(src.size, 0);
+    for (int i=1; i<res.size(); ++i) {
+        res[i] = res[i-1] + sqrt(pow(src.xs[i]-src.xs[i-1], 2) + 
+                                pow(src.ys[i]-src.ys[i-1], 2));
+    }
+    Normalize(res);
+    return res;
+}
+
 // 多项式
 void InterPolation_1(NodeArr &src, NodeArr &tar) {
     using namespace Eigen;
