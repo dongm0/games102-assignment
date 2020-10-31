@@ -71,25 +71,28 @@ std::vector<double> Parametrization_foley(const NodeArr &src) {
     assert(src.size > 3);
     vector<double> res(src.size, 0);
     for (int i=1; i<res.size(); ++i) {
-        if (i==1 or i==res.size()-1)
-            res[i] = res[i-1] + sqrt(pow(src.xs[i]-src.xs[i-1], 2) + 
-                                    pow(src.ys[i]-src.ys[i-1], 2));
-        else if (i != res.size()-2){
-            double a1 = foley_alpha_hat(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
-            double a2 = foley_alpha_hat(src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1], src.xs[i+2], src.ys[i+2]);
-            double d1 = foley_dist(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
-            double d2 = foley_dist(src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
-            double d3 = foley_dist(src.xs[i+1], src.ys[i+1], src.xs[i+2], src.ys[i+2]);
-            res[i] = res[i-1] + d1 * (1+1.5*a1*d1/(d1+d2)+1.5*a2*d2/(d2+d3));
+        bool has_left = true, has_right = true;
+        double angle_l, angle_r, length, length_l, length_r;
+        if (i == 1) has_left = false;
+        if (i == res.size()-1) has_right = false;
+        length = foley_dist(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
+        if (has_left) {
+            angle_l = foley_alpha_hat(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
+            length_l = foley_dist(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1]);
         }
-        else {
-            double a1 = foley_alpha_hat(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
-            double a2 = foley_alpha_hat(src.xs[i-3], src.ys[i-3], src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1]);
-            double d1 = foley_dist(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
-            double d2 = foley_dist(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1]);
-            double d3 = foley_dist(src.xs[i-3], src.ys[i-3], src.xs[i-2], src.ys[i-2]);
-            res[i] = res[i-1] + d1 * (1+1.5*a1*d1/(d1+d2)+1.5*a2*d2/(d2+d3));
+        if (has_right) {
+            angle_r = foley_alpha_hat(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
+            length_r = foley_dist(src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
         }
+        double base_len = length;
+        double mul = 1;
+        if (has_left) {
+            mul += 1.5*angle_l*length_l/(length_l+length);
+        }
+        if (has_right) {
+            mul += 1.5*angle_r*length_r/(length_r+length);
+        }
+        res[i] = res[i-1] + mul*base_len;
     }
     Normalize(res);
     return res;

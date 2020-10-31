@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Hw1 by dongmo", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1200, 1000, "Hw3 by dongmo", NULL, NULL);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -69,20 +69,7 @@ int main(int argc, char **argv) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        {
-            /*
-            const float my_pi = 3.14159265;
-            static float_t xs[1001], ys[1001];
-            for (int i=0; i<1001; ++i) {
-                xs[i] = cos(i*0.001f*my_pi);
-                ys[i] = sin(i*0.001f*my_pi);//xs[i]*xs[i] - 2*xs[i] + 1;
-            }
-            if (ImPlot::BeginPlot("test", "x", "y")) {
-                ImPlot::PlotLine("test func1", xs, ys, 1001);
-                ImPlot::EndPlot();
-            }
-            */
-            
+        {            
             ImGui::SetNextWindowSize(ImVec2(800,900), ImGuiCond_Appearing);
             ImGui::Begin("main", &mainopen);
             bool cal = false;
@@ -93,10 +80,6 @@ int main(int argc, char **argv) {
                 }
                 if (data.size() > 0) {
                     ImPlot::PlotScatter("Raw Data", &data[0].x, &data[0].y, data.size(), 0, 2*sizeof(double));
-                }
-                else {
-                    double xx = 0, yy = 0;
-                    ImPlot::PlotScatter("Raw Data", &xx, &yy, 0);
                 }
                 
                 if (draw == true) {
@@ -110,7 +93,7 @@ int main(int argc, char **argv) {
             }
             if (ImPlot::BeginPlot("Para", "t", "", ImVec2(600, 120), 0, 0, 6)) {
                 if (draw == true) {
-                    ImPlot::PlotScatter("Distribution", &para1[0], &ones[0], para1.size(), 0, sizeof(double));
+                    ImPlot::PlotScatter("", &para1[0], &ones[0], para1.size(), 0, sizeof(double));
                     ImPlot::PlotLine("", &para1[0], &ones[0], para1.size(), 0, sizeof(double));
                 }
                 ImPlot::EndPlot();
