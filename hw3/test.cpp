@@ -53,6 +53,8 @@ int main(int argc, char **argv) {
 
     ImVector<ImPlotPoint> data;
     NodeArr arr1, arr2, arr3, arr4, src;
+    std::vector<double> para1;
+    std::vector<double> ones;
 
     bool mainopen = true;
     bool draw = false;
@@ -81,10 +83,10 @@ int main(int argc, char **argv) {
             }
             */
             
-            ImGui::SetNextWindowSize(ImVec2(900,900), ImGuiCond_Appearing);
+            ImGui::SetNextWindowSize(ImVec2(800,900), ImGuiCond_Appearing);
             ImGui::Begin("main", &mainopen);
             bool cal = false;
-            if (ImPlot::BeginPlot("Fig", "x", "y", ImVec2(-1, -1))) {
+            if (ImPlot::BeginPlot("Fig", "x", "y", ImVec2(600, 600))) {
                 if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
                     ImPlotPoint pt = ImPlot::GetPlotMousePos();
                     data.push_back(pt);
@@ -98,12 +100,19 @@ int main(int argc, char **argv) {
                 }
                 
                 if (draw == true) {
-                    ImPlot::PlotLine("InterPolation_Poly", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
+                    ImPlot::PlotLine("InterPolation_Gaussian", &arr1.xs[0], &arr1.ys[0], arr1.size, 0, sizeof(double));
                     //ImPlot::PlotLine("InterPolation_Gaussian", &arr2.xs[0], &arr2.ys[0], arr2.size, 0, sizeof(double));
                     //ImPlot::PlotLine("Least_Square", &arr3.xs[0], &arr3.ys[0], arr3.size, 0, sizeof(double));
                     //ImPlot::PlotLine("Ridge_Regression", &arr4.xs[0], &arr4.ys[0], arr4.size, 0, sizeof(double));
                 }
                 
+                ImPlot::EndPlot();
+            }
+            if (ImPlot::BeginPlot("Para", "t", "", ImVec2(600, 120), 0, 0, 6)) {
+                if (draw == true) {
+                    ImPlot::PlotScatter("Distribution", &para1[0], &ones[0], para1.size(), 0, sizeof(double));
+                    ImPlot::PlotLine("", &para1[0], &ones[0], para1.size(), 0, sizeof(double));
+                }
                 ImPlot::EndPlot();
             }
             if (ImGui::Button("Draw", ImVec2(50, 26))) {
@@ -114,9 +123,14 @@ int main(int argc, char **argv) {
                 data.clear();
                 draw = false;
             }
-            ImGui::InputDouble("Input sigma", &mu);
-            ImGui::InputInt("Input order", &order);
-            ImGui::InputDouble("Input lambda", &lam);
+            static int e = 0;
+            ImGui::RadioButton("uniform", &e, 0); 
+            ImGui::SameLine();
+            ImGui::RadioButton("chordal", &e, 1); 
+            ImGui::SameLine();
+            ImGui::RadioButton("centripetal", &e, 2);
+            ImGui::SameLine();
+            ImGui::RadioButton("foley", &e, 3);
             
             if (cal == true && data.size()>0) {
                 //std::sort(data.begin(), data.end(), [](ImPlotPoint &p1, ImPlotPoint &p2){ return p1.x < p2.x; });
@@ -126,14 +140,26 @@ int main(int argc, char **argv) {
                     src.ys.at(i) = data[i].y;
                 }
                 src.size = src.xs.size();
-
-                auto para1 = Parametrization_chordal(src);
+                
+                if (e == 0) {
+                    para1 = Parametrization_uniform(src);
+                }
+                else if (e == 1) {
+                    para1 = Parametrization_chordal(src);
+                }
+                else if (e == 2) {
+                    para1 = Parametrization_centripetal(src);
+                }
+                else {
+                    para1 = Parametrization_foley(src);
+                }
+                ones.assign(para1.size(), 0.5);
                 NodeArr src_x(para1, src.xs);
                 NodeArr src_y(para1, src.ys);
                 //InterPolation_1(src, arr1);
                 //InterPolation_2(src, arr2, mu);
-                InterPolation_2(src_x, arr1, mu);
-                InterPolation_2(src_y, arr2, mu);
+                InterPolation_2(src_x, arr1);
+                InterPolation_2(src_y, arr2);
                 arr1.xs = arr1.ys, arr1.ys = arr2.ys;
                 //Ridge_Regression(src, arr4, order, lam);
                 draw = true;

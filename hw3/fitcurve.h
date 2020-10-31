@@ -40,6 +40,62 @@ std::vector<double> Parametrization_chordal(const NodeArr &src) {
     return res;
 }
 
+std::vector<double> Parametrization_centripetal(const NodeArr &src) {
+    using namespace std;
+    assert(src.size > 1);
+    vector<double> res(src.size, 0);
+    for (int i=1; i<res.size(); ++i) {
+        res[i] = res[i-1] + sqrt(sqrt(pow(src.xs[i]-src.xs[i-1], 2) + 
+                                pow(src.ys[i]-src.ys[i-1], 2)));
+    }
+    Normalize(res);
+    return res;
+}
+
+double foley_dist(double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x2-x1, 2) + pow(y2-y1, 2));
+}
+
+double foley_alpha_hat(double x1, double y1, double x2, double y2, double x3, double y3) {
+    double dx1 = x2-x1, dy1 = y2-y1, dx2 = x3-x2, dy2 = y3-y2;
+    double dot = -dx1*dx2 - dy1*dy2;
+    double l1 = foley_dist(x1, y1, x2, y2), l2 = foley_dist(x2, y2, x3, y3);
+    double angle = acos(dot/(l1*l2));
+    angle = std::min(4*atan(1)-angle, 2*atan(1));
+    return angle;
+}
+
+
+std::vector<double> Parametrization_foley(const NodeArr &src) {
+    using namespace std;
+    assert(src.size > 3);
+    vector<double> res(src.size, 0);
+    for (int i=1; i<res.size(); ++i) {
+        if (i==1 or i==res.size()-1)
+            res[i] = res[i-1] + sqrt(pow(src.xs[i]-src.xs[i-1], 2) + 
+                                    pow(src.ys[i]-src.ys[i-1], 2));
+        else if (i != res.size()-2){
+            double a1 = foley_alpha_hat(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
+            double a2 = foley_alpha_hat(src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1], src.xs[i+2], src.ys[i+2]);
+            double d1 = foley_dist(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
+            double d2 = foley_dist(src.xs[i], src.ys[i], src.xs[i+1], src.ys[i+1]);
+            double d3 = foley_dist(src.xs[i+1], src.ys[i+1], src.xs[i+2], src.ys[i+2]);
+            res[i] = res[i-1] + d1 * (1+1.5*a1*d1/(d1+d2)+1.5*a2*d2/(d2+d3));
+        }
+        else {
+            double a1 = foley_alpha_hat(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
+            double a2 = foley_alpha_hat(src.xs[i-3], src.ys[i-3], src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1]);
+            double d1 = foley_dist(src.xs[i-1], src.ys[i-1], src.xs[i], src.ys[i]);
+            double d2 = foley_dist(src.xs[i-2], src.ys[i-2], src.xs[i-1], src.ys[i-1]);
+            double d3 = foley_dist(src.xs[i-3], src.ys[i-3], src.xs[i-2], src.ys[i-2]);
+            res[i] = res[i-1] + d1 * (1+1.5*a1*d1/(d1+d2)+1.5*a2*d2/(d2+d3));
+        }
+    }
+    Normalize(res);
+    return res;
+}
+
+
 // 多项式
 void InterPolation_1(NodeArr &src, NodeArr &tar) {
     using namespace Eigen;
@@ -78,11 +134,12 @@ void InterPolation_1(NodeArr &src, NodeArr &tar) {
 }
 
 // 高斯基函数
-void InterPolation_2(NodeArr &src, NodeArr &tar, double para1 /*分母的delta*/) {
+void InterPolation_2(NodeArr &src, NodeArr &tar) {
     using namespace Eigen;
     const int num_pow = src.size;
     Matrix<double, Dynamic, Dynamic> A(num_pow+1, num_pow+1);
     VectorXd x(num_pow+1), b(num_pow+1);
+    double para1 = (src.xs.back()-src.xs.front())/(src.size-1);
     
     // build A and b
     for (int i=0; i<num_pow; ++i) {
