@@ -2,6 +2,8 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 
+
+
 struct controlPoint {
     double val;
     double ldiff;
@@ -9,7 +11,7 @@ struct controlPoint {
     bool fixed_diff = false;
 };
 
-void ThreeOrderSample(std::vector<controlPoint>::iterator begin, std::vector<controlPoint>::iterator end) {
+void ThreeOrderSample(std::vector<controlPoint> &points, std::vector<controlPoint>::iterator begin, std::vector<controlPoint>::iterator end) {
     using namespace Eigen;
 
     int pointnum = end-begin;
@@ -69,6 +71,15 @@ void ThreeOrderSample(std::vector<controlPoint>::iterator begin, std::vector<con
         A(n*4-1, (n-1)*4+1) = 2;
     }
     x = A.colPivHouseholderQr().solve(b);
+}
+
+class ControlPoints2D {
+public:
+
+private:
+    std::vector<controlPoint> xs;
+    std::vector<controlPoint> ys;
+    std::vector<bool> fixed;
 }
 
 struct NodeArr {
