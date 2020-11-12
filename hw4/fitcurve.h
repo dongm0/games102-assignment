@@ -2,6 +2,75 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 
+struct controlPoint {
+    double val;
+    double ldiff;
+    double rdiff;
+    bool fixed_diff = false;
+};
+
+void ThreeOrderSample(std::vector<controlPoint>::iterator begin, std::vector<controlPoint>::iterator end) {
+    using namespace Eigen;
+
+    int pointnum = end-begin;
+    if (pointnum < 2) return;
+    int n = pointnum - 1;
+    
+    Matrix<double, Dynamic, Dynamic> A(n, n);
+    VectorXd b(n), x(x);
+    int disp = 1;
+    for (auto it=begin; it!=end; ++it) {
+        int num = it-begin;
+
+        //lvalue
+        A(num*4+disp, num*4) = pow(num, 3);
+        A(num*4+disp, num*4+1) = pow(num, 2);
+        A(num*4+disp, num*4+2) = num;
+        A(num*4+disp, num*4+3) = 1;
+        b(num*4+disp) = it->val;
+
+        //rvalue
+        A(num*4+1+disp, num*4) = pow(num+1, 3);
+        A(num*4+1+disp, num*4+1) = pow(num+1, 2);
+        A(num*4+1+disp, num*4+2) = num+1;
+        A(num*4+1+disp, num*4+3) = 1;
+        b(num*4+1+disp) = (it+1)->val;
+
+        if (num != pointnum - 1) {
+            A(num*4+2+disp, num*4) = 3*pow(num+1, 2);
+            A(num*4+2+disp, num*4+1) = 2*(num+1);
+            A(num*4+2+disp, num*4+2) = 1;
+            A(num*4+2+disp, (num+1)*4) = -3*pow(num+1, 2);
+            A(num*4+2+disp, (num+1)*4+1) = -2*(num+1);
+            A(num*4+2+disp, (num+1)*4+2) = -1;
+
+            A(num*4+3+disp, num*4) = 3*(num+1);
+            A(num*4+3+disp, num*4+1) = 1;
+            A(num*4+3+disp, (num+1)*4) = -3*(num+1);
+            A(num*4+3+disp, (num+1)*4+1) = -1;
+        }
+
+    }
+    if (begin->fixed_diff == true) {
+        A(0, 2) = 1;
+        b(0) = begin->rdiff;
+    }
+    else {
+        A(0, 1) = 1;
+    }
+    if ((end-1)->fixed_diff == true) {
+        A(n*4-1, (n-1)*4) = 3*pow(n, 2);
+        A(n*4-1, (n-1)*4+1) = 2*n;
+        A(n*4-1, (n-1)*4+2) = 1;
+        b(n*4-1) = (end-1)->ldiff;
+    }
+    else {
+        A(n*4-1, (n-1)*4) = 6*n;
+        A(n*4-1, (n-1)*4+1) = 2;
+    }
+    x = A.colPivHouseholderQr().solve(b);
+}
+
 struct NodeArr {
     NodeArr() {}
     NodeArr(std::vector<double> x, std::vector<double> y) : xs(x), ys(y), size(x.size()) {}

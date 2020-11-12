@@ -1,28 +1,14 @@
-#include "imgui/imgui.h"
-#include "imgui_impl/imgui_impl_glfw.h"
-#include "imgui_impl/imgui_impl_opengl3.h"
-#include "glad/include/glad/glad.h"
-#include <GLFW/glfw3.h>
-#include "implot/implot.h"
-#include "implot/implot_internal.h"
-
-#include "implot/implot_demo.cpp"
-#include "fitcurve.h"
-
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <cmath>
+#include "myapp.h"
 
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "Glfw error"+std::to_string(error)+
                  ": "+std::string(description) << std::endl;
 }
 
-int main(int argc, char **argv) {
+void MyApp::initAll() {
     glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
+
+    glfwInit();
 
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -31,16 +17,12 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
 
-    GLFWwindow* window = glfwCreateWindow(1200, 1000, "Hw3 by dongmo", NULL, NULL);
-    if (window == nullptr)
-        return 1;
+    window = glfwCreateWindow(1200, 1000, "Hw3 by dongmo", NULL, NULL);
+
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    if (gladLoadGL() == 0) {
-        std::cerr << "Failed to init glad." << std::endl;
-        return 1;
-    }
+    gladLoadGL();
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -50,17 +32,21 @@ int main(int argc, char **argv) {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+}
 
-    ImVector<ImPlotPoint> data;
-    NodeArr arr1, arr2, arr3, arr4, src;
-    std::vector<double> para1;
-    std::vector<double> ones;
+void MyApp::cleanUp() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
 
-    bool mainopen = true;
-    bool draw = false;
-    double mu = 1;
-    int order = 5;
-    double lam = 1;
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+void MyApp::mainLoop() {
+    //预定变量
+    
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -71,7 +57,7 @@ int main(int argc, char **argv) {
 
         {            
             ImGui::SetNextWindowSize(ImVec2(800,900), ImGuiCond_Appearing);
-            ImGui::Begin("main", &mainopen);
+            ImGui::Begin("main");
             bool cal = false;
             if (ImPlot::BeginPlot("Fig", "x", "y", ImVec2(600, 600))) {
                 if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
@@ -166,14 +152,4 @@ int main(int argc, char **argv) {
 
         glfwSwapBuffers(window);
     }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return 0;
 }
