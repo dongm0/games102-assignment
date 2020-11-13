@@ -11,7 +11,7 @@ struct controlPoint {
     bool fixed_diff = false;
 };
 
-void ThreeOrderSample(std::vector<controlPoint> &points, std::vector<controlPoint>::iterator begin, std::vector<controlPoint>::iterator end) {
+std::vector<double> ThreeOrderSample(std::vector<controlPoint>::iterator begin, std::vector<controlPoint>::iterator end) {
     using namespace Eigen;
 
     int pointnum = end-begin;
@@ -71,16 +71,42 @@ void ThreeOrderSample(std::vector<controlPoint> &points, std::vector<controlPoin
         A(n*4-1, (n-1)*4+1) = 2;
     }
     x = A.colPivHouseholderQr().solve(b);
+    std::vector<double> res;
+    for (int i=0; i<n; ++i)
+        res.push_back(x(i));
+    return res;
 }
 
-class ControlPoints2D {
+class ControlPointArray2D {
 public:
-
+    void ThreeOrder();
+    void ThreeOrder(int st_range, int ed_range);
+    uint32_t nodenum() {
+        return size()+1;
+    }
+    uint32_t size() {
+        assert(xs.size()==ys.size() and ys.size()==fixed.size());
+        return fixed.size();
+    }
+    void calculateRange(int p);
 private:
+    void setFixDiff(int pos) {
+        fixed.at(pos) = true;
+        xs.at(pos).fixed_diff = true;
+        ys.at(pos).fixed_diff = true;
+    }
+    
+
     std::vector<controlPoint> xs;
     std::vector<controlPoint> ys;
     std::vector<bool> fixed;
-}
+
+    std::vector<std::vector<double>> param;
+
+    //绘图的点
+    NodeArr drawPoints;
+    uint64_t nodePerRange = 100;
+};
 
 struct NodeArr {
     NodeArr() {}
