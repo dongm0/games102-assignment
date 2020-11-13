@@ -81,14 +81,26 @@ class ControlPointArray2D {
 public:
     void ThreeOrder();
     void ThreeOrder(int st_range, int ed_range);
-    uint32_t nodenum() {
-        return size()+1;
+    int32_t size() {
+        return nodenum()-1;
     }
-    uint32_t size() {
+    uint32_t nodenum() {
         assert(xs.size()==ys.size() and ys.size()==fixed.size());
         return fixed.size();
     }
     void calculateRange(int p);
+
+    void push_back(double x, double y) {
+        xs.push_back({x, 0, 0, false});
+        ys.push_back({y, 0, 0, false});
+        fixed.push_back(false);
+
+        if (nodenum()>=2) {
+            drawPoints.push_back(NodeArr(nodePerRange));
+            param.push_back(std::vector<double>(8));
+        }
+    }
+    void delete_at(int pos);
 private:
     void setFixDiff(int pos) {
         fixed.at(pos) = true;
@@ -101,15 +113,16 @@ private:
     std::vector<controlPoint> ys;
     std::vector<bool> fixed;
 
-    std::vector<std::vector<double>> param;
 
     //绘图的点
-    NodeArr drawPoints;
+    std::vector<NodeArr> drawPoints;
+    std::vector<std::vector<double>> param;
     uint64_t nodePerRange = 100;
 };
 
 struct NodeArr {
     NodeArr() {}
+    NodeArr(int _size) : size(_size), xs(std::vector<double>(_size)), ys(std::vector<double>(_size)) {}
     NodeArr(std::vector<double> x, std::vector<double> y) : xs(x), ys(y), size(x.size()) {}
     unsigned int size;
     std::vector<double> xs;
