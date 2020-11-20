@@ -3,5 +3,5 @@
 int main() {
     MyApp app;
     app.run();
-    return 1;
+    return 0;
 }
