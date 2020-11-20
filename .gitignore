@@ -2,4 +2,7 @@
 example*
 *.ini
 
+./*/*.o
+
 .vscode/
+./hw*/.vscode
