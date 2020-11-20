@@ -73,7 +73,7 @@ void ControlPointArray2D::updateDrawPoints_3() {
         return;
     auto arrcpy = m_ctrlPoints;
     for (int i=0; i<m_itTime; ++i) {
-        if (m_closed) {
+        if (!m_closed) {
             std::vector<mypoint> tmp(arrcpy.size()*2-1);
             mypoint dumph, dumpt;
             dumph = arrcpy[0]*2 - arrcpy[1];
@@ -83,15 +83,15 @@ void ControlPointArray2D::updateDrawPoints_3() {
                 if (j != arrcpy.size()-1) {
                     if (j == 0) {
                         tmp[1] = ((arrcpy[0]+arrcpy[1])*(1+m_interpolationPara) - 
-                                  (dumph+arrcpy[2])*m_interpolationPara)*0.5;
+                                  (dumph+arrcpy[2])*m_interpolationPara)*(0.5);
                     }
                     else if (j == arrcpy.size()-2) {
                         tmp[j*2+1] = ((arrcpy[j]+arrcpy[j+1])*(1+m_interpolationPara) - 
-                                      (arrcpy[j-1]+dumpt)*m_interpolationPara)*0.5;
+                                      (arrcpy[j-1]+dumpt)*m_interpolationPara)*(0.5);
                     }
                     else {
                         tmp[j*2+1] = ((arrcpy[j]+arrcpy[j+1])*(1+m_interpolationPara) - 
-                                      (arrcpy[j-1]+arrcpy[j+2])*m_interpolationPara)*0.5;
+                                      (arrcpy[j-1]+arrcpy[j+2])*m_interpolationPara)*(0.5);
                     }
                 }
             }
@@ -103,7 +103,7 @@ void ControlPointArray2D::updateDrawPoints_3() {
             for (int j=0; j<arrcpy.size(); ++j) {
                 tmp[j*2] = arrcpy[j];
                 tmp[j*2+1] = ((arrcpy[j]+arrcpy[(j+1+len)%len])*(1+m_interpolationPara) - 
-                              (arrcpy[(j-1+len)%len]+arrcpy[(j+2+len)%len])*m_interpolationPara)*0.5;
+                              (arrcpy[(j-1+len)%len]+arrcpy[(j+2+len)%len])*m_interpolationPara)*(0.5);
             }
             arrcpy = std::move(tmp);
         }

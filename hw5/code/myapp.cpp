@@ -48,6 +48,10 @@ void MyApp::mainLoop() {
     //预定变量
     ControlPointArray2D arr;
     bool edit = false;
+    int it = 0;
+    float l = 0.12;
+    int me = 0;
+    int chosepoint = -1;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -57,38 +61,68 @@ void MyApp::mainLoop() {
         ImGui::NewFrame();
 
         {            
-            ImGui::SetNextWindowSize(ImVec2(1000,1000), ImGuiCond_Appearing);
+            ImGui::SetNextWindowSize(ImVec2(900,1000), ImGuiCond_Appearing);
             ImGui::Begin("main");
 
-            if (ImPlot::BeginPlot("", "", "", ImVec2(900, 900))) {
-                if (ImPlot::IsPlotHovered() and ImGui::IsMouseClicked(0) and !arr.closed()) {
-                    ImPlotPoint pt = ImPlot::GetPlotMousePos();
-                    arr.pushBack({pt.x, pt.y});
+            if (ImPlot::BeginPlot("", "", "", ImVec2(800, 800))) {
+                if (!edit) {
+                    if (ImPlot::IsPlotHovered() and ImGui::IsMouseClicked(0) and !arr.closed()) {
+                        ImPlotPoint pt = ImPlot::GetPlotMousePos();
+                        arr.pushBack({pt.x, pt.y});
+                    }
+                    else if (ImPlot::IsPlotHovered() and ImGui::IsMouseClicked(1)) {
+                        arr.makeClose();
+                    }
                 }
-                else if (ImPlot::IsPlotHovered() and ImGui::IsMouseDoubleClicked(0)) {
-                    arr.makeClose();
+                else {
+                    if (ImPlot::IsPlotHovered() and ImGui::IsMouseClicked(0) and chosepoint==-1) {
+                        ImPlotPoint pt = ImPlot::GetPlotMousePos();
+                        chosepoint = arr.getClosePoint({pt.x, pt.y});
+                    }
+                    else if (ImPlot::IsPlotHovered() and ImGui::IsMouseClicked(0) and chosepoint != -1) {
+                        chosepoint = -1;
+                    }
+                    else if (chosepoint != -1) {
+                        ImPlotPoint pt = ImPlot::GetPlotMousePos();
+                        arr.setPos(chosepoint, {pt.x, pt.y});
+                    }
                 }
             }
             {
                 auto cp = arr.getCtrlPoint();
+                int kkk = cp.size();
                 auto dp = arr.getDrawPoint();
 
-                if (cp.size() > 0)
+                if (cp.size() > 0) {
                     ImPlot::PlotLine("control points", &cp[0].x, &cp[0].y, cp.size(), 0, 2*sizeof(double));
-                if (dp.size() > 0)
+                    if (arr.closed()) {
+                        double l1[4] = {cp.back().x, cp.back().y, cp[0].x, cp[0].y};
+                        ImPlot::PlotLine("control points", &l1[0], &l1[1], 2, 0, 2*sizeof(double));
+                    }
+                }
+                if (dp.size() > 0) {
                     ImPlot::PlotLine("curve", &dp[0].x, &dp[0].y, dp.size(), 0, 2*sizeof(double));
+                    if (arr.closed()) {
+                        double l1[4] = {dp.back().x, dp.back().y, dp[0].x, dp[0].y};
+                        ImPlot::PlotLine("curve", &l1[0], &l1[1], 2, 0, 2*sizeof(double));
+                    }
+                }
+
+                if (edit) {
+                    ImPlot::PlotScatter("", &cp[0].x, &cp[0].y, cp.size(), 0, 2*sizeof(double));
+                }
 
             }
             ImPlot::EndPlot();
 
             ImGui::Checkbox("edit ctrl points", &edit);
-            int it = 0;
-            ImGui::SliderInt("curve iteration times", &it, 0, 10);
+            ImGui::SameLine();
+            if (ImGui::Button("clean"))
+                arr.clear();
+            ImGui::SliderInt("curve iteration times", &it, 0, 12);
             arr.setItTime(it);
-            float l = 0.12;
-            ImGui::SliderFloat("curve iteration times", &l, 0, 0.125f);
+            ImGui::SliderFloat("interpolation para", &l, 0, 0.6f);
             arr.setInterpolationPara(l);
-            int me = 0;
             ImGui::RadioButton("2nd B-spline", &me, 0);ImGui::SameLine();
             ImGui::RadioButton("3rd B-spline", &me, 1);ImGui::SameLine();
             ImGui::RadioButton("Intrtpolation", &me, 2);

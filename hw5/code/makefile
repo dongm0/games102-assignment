@@ -4,7 +4,7 @@ OBJ += ./imgui/imgui_impl_opengl3.o ./imgui/imgui_widgets.o ./imgui/imgui.o
 OBJ += ./imgui/implot_items.o ./imgui/implot.o 
 
 CXXFLAGS = -I ./glad -I /usr/local/include
-CXXFLAGS += -DIMGUI_IMPL_OPENGL_LOADER_GLAD -g
+CXXFLAGS += -DIMGUI_IMPL_OPENGL_LOADER_GLAD -O2
 
 LIBS = -lGL -lm -lrt -ldl -L/usr/local/lib -lglfw
 
